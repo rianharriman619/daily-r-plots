@@ -27,7 +27,7 @@ jobs:
             tidyverse
             ggplot2
             TTR
-            # add any other packages your script needs
+            
 
       - name: Run R script
         run: Rscript plot_script.R
