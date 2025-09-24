@@ -3,10 +3,11 @@ library(TTR)
 library(tidyverse)
 
 tickers <- c(
-  "AAPL", "TSLA", "NVDA", "INTC", "PLTR", "OPEN", "MSTR", "SOFI", "AMZN", "RGTI",
-  "AMD", "JD", "HOOD", "SMCI", "SMR", "CRWD", "GOOGL", "MSFT", "ORCL", "AMC",
-  "META", "SNAP", "MU", "IREN", "NIO", "WBD", "BBAI", "HIMS", "SOUN", "MARA"
+  "AAPL","MSFT","AMZN","TSLA","NVDA","META","GOOGL","AMD","INTC","NFLX",
+  "BABA","JPM","BAC","WFC","C","GS","PLTR","COIN","MSTR","HOOD",
+  "AMC","GME","SNAP","UBER","LYFT","SOFI","NIO","MU","ORCL","AVGO"
 )
+
 
 # --- Parameters ---
 forward_days        <- 365
@@ -42,22 +43,9 @@ suppress_noise <- function(idx_vec, value_vec, min_gap) {
 # --- Function to process one ticker ---
 process_ticker <- function(tkr) {
   test <- tq_get(tkr, from = Sys.Date()-years(4), to = Sys.Date()) %>%
-    select(symbol, date, open, high, low, close, volume) %>%
-    mutate(
-      date   = as_date(date),
-      rsi    = RSI(close),
-      ema_10 = EMA(close, n = 10)
-    )
+    select(symbol, date, open, high, low, close, volume) 
   
-  hlc      <- test %>% select(high, low, close)
-  macd     <- MACD(hlc$close)
-  adx      <- ADX(hlc)
-  stochOsc <- stoch(hlc)
-  bbands   <- BBands(hlc)
-  
-  data <- bind_cols(test, as_tibble(macd), as_tibble(adx),
-                    as_tibble(stochOsc), as_tibble(bbands)) %>%
-    mutate(MACD_histogram = macd - signal)
+  data <- test
   
   # Local extrema
   neighbors_lag  <- map_dfc(1:pivot_k, ~lagN(data$close, .x)) %>% setNames(paste0("lag", 1:pivot_k))
@@ -198,6 +186,5 @@ filename  <- file.path("ultimate_plots",
 
 # --- Save plot ---
 ggsave(filename, plot = p, width = 14, height = 8, dpi = 300)
-
 
 
